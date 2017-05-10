@@ -10,7 +10,7 @@ var del = require('del');
 var imagein = require('gulp-imagemin');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
-var browserSync = require('browser-sync');
+var browserSync = require('browser-sync').create();
 var gutil = require('gulp-util');
 var ftp = require('gulp-ftp');
 
@@ -22,17 +22,6 @@ var paths = {
     markup: 'dev/*.html',
     fonts: 'dev/fonts/*'
 };
-
-gulp.task('browserSync', function() {
-    browserSync({
-        server: {
-            baseDir: "public"
-        },
-        port: 8080,
-        open: true,
-        notify: false
-    });
-});
 
 gulp.task('clean', function() {
     return del('public');
@@ -68,7 +57,7 @@ gulp.task('styles', function () {
         }))
         .pipe(sourcemaps.write())
         .pipe(rename(function (path) {
-            path.basename = "custom-styles";
+            path.basename = "general";
             path.extname = ".css"
         }))
         .pipe(gulp.dest('public/css'))
@@ -94,11 +83,19 @@ gulp.task('upload', function () {
 });
 
 gulp.task('watch', function() {
-    gulp.watch(paths.styles, ['styles']);
+    browserSync.init({
+        server: {
+            baseDir: "public"
+        },
+        port: 8080,
+        open: true,
+        notify: false
+    });
+    gulp.watch('dev/styles/*', ['styles']);
     gulp.watch(paths.scripts, ['scripts']);
     gulp.watch(paths.images, ['images']);
     gulp.watch(paths.markup, ['markup']);
 });
 
 
-gulp.task('default', ['watch', 'clean', 'markup', 'fonts', 'styles', 'scripts' , 'images', 'browserSync']);
+gulp.task('default', ['watch', 'markup', 'fonts', 'styles', 'scripts', 'images']);
